@@ -1,0 +1,44 @@
+[
+  {
+    "id": "epsilon-anwesen",
+    "title": "Epsilon-Anwesen",
+    "area": "Epsilon-Anwesen",
+    "image": null,
+    "description": ""
+  },
+  {
+    "id": "strandpromenade",
+    "title": "Strandpromenade",
+    "area": "Strandpromenade",
+    "image": "assets/strandpromenade.webp",
+    "description": ""
+  },
+  {
+    "id": "halloween-park",
+    "title": "Halloween-Park",
+    "area": "Halloween-Park",
+    "image": "assets/halloween-park.webp",
+    "description": ""
+  },
+  {
+    "id": "seitengasse-parkhaus",
+    "title": "Seitengasse am Parkhaus",
+    "area": "Parkhaus",
+    "image": "assets/seitengasse-parkhaus.webp",
+    "description": ""
+  },
+  {
+    "id": "kuestensteg",
+    "title": "Steg an der Küste",
+    "area": "Küste",
+    "image": "assets/kuestensteg.webp",
+    "description": ""
+  },
+  {
+    "id": "flughafen",
+    "title": "Los Santos Airport",
+    "area": "Flughafen",
+    "image": "assets/flughafen.webp",
+    "description": ""
+  }
+]
