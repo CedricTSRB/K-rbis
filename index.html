@@ -19,7 +19,13 @@
 .existing-photo img{display:block;width:100%;height:85px;object-fit:contain;background:#111;border-radius:6px}
 .existing-photo button{display:block;width:100%;padding:8px 5px;margin-top:7px;border-radius:6px;background:#362422;color:#ffd6bc;border:1px solid #664437;font-size:11px}
 .existing-photo.to-remove button{background:#2d3f32;color:#c8f5d6}
-.admin-dialog button[hidden]{display:none!important}@media(max-width:660px){.nav-actions{gap:5px}.admin-launch{padding:8px;font-size:10px}.badge{display:none}.admin-dialog{padding:15px}}
+.admin-dialog button[hidden]{display:none!important}
+.upload-previews{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.upload-preview{width:calc(33.333% - 7px);min-width:110px;padding:7px;border:1px solid #6b4e3f;border-radius:9px;background:#211b21}
+.upload-preview img{display:block;width:100%;height:95px;object-fit:contain;background:#111;border-radius:5px}
+.upload-preview small{display:block;margin-top:7px;word-break:break-word;font-size:10px}
+.image-error{font-size:11px;color:#ffc28d;padding:10px;display:block;text-align:center}
+.admin-image-hint{margin:9px 0 0}@media(max-width:660px){.nav-actions{gap:5px}.admin-launch{padding:8px;font-size:10px}.badge{display:none}.admin-dialog{padding:15px}}
 </style></head>
 <body><header class="top"><div class="wrap nav"><a class="logo" href="#start"><span class="logo-icon">🎃</span><span><strong>NARCO<span>CITY</span></strong><small>HALLOWEEN EVENT GUIDE</small></span></a><div class="nav-actions"><span class="badge"><i></i>KÜRBISSUCHE 2026</span><button class="admin-launch" id="admin-open" type="button">⚙ Verwalten</button></div></div></header>
 <main id="start"><section class="hero"><div class="wrap hero-row"><div class="hero-copy"><span class="kicker">NARCO CITY · HALLOWEEN SPECIAL</span><h1>FINDE<br><em>ALLE KÜRBISSE.</em></h1><p class="intro">Alle Kürbis-Fundorte auf einen Blick: Screenshots ansehen, Kürbisse finden und direkt abhaken.</p><a class="action" href="#fundorte">FUNDORTE ENTDECKEN ↗</a></div><div class="sketch" aria-hidden="true"><span>🎃</span></div></div></section>
@@ -50,6 +56,8 @@
       <label for="admin-image">Screenshots hinzufügen (maximal 3 pro Fundort)</label>
       <input id="admin-image" type="file" accept="image/png,image/jpeg,image/webp" multiple>
       <small id="admin-image-note">Wähle bis zu 3 PNG-, JPG- oder WebP-Bilder auf einmal aus. Originalqualität bleibt erhalten.</small>
+      <div id="admin-upload-preview" class="upload-previews" aria-live="polite"></div>
+      <p class="admin-image-hint"><small>Die Vorschaubilder erscheinen sofort. Zum Speichern anschließend unbedingt auf <strong>Auf Webseite veröffentlichen</strong> klicken und auf die Bestätigung warten.</small></p>
       <div id="admin-existing-images" class="existing-photos" aria-label="Vorhandene Bilder verwalten"></div>
       <div class="admin-actions"><button class="primary" id="admin-save" type="submit">💾 Auf Webseite veröffentlichen</button><button id="admin-new" type="button">＋ Neu</button><button id="admin-delete" type="button" hidden>🗑 Löschen</button></div>
     </form>
@@ -65,6 +73,31 @@ const KEY='narco-city-kuerbissuche-2026-v1';
 let found={};try{const saved=JSON.parse(localStorage.getItem(KEY)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))found=saved;}catch(e){}
 let filter='all';
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Bilder direkt aus dem öffentlichen GitHub-Repository laden: unabhängig von der Pages-Deployment-Wartezeit.
+const RAW_ROOT='https://raw.githubusercontent.com/CedricTSRB/K-rbis/main/';
+function imageHref(path){
+ if(!path)return '';
+ if(/^https?:\/\//i.test(path))return path;
+ return RAW_ROOT+String(path).replace(/^\.\//,'').split('/').map(encodeURIComponent).join('/');
+}
+function imageAttrs(path){return 'src="'+escape(imageHref(path))+'" data-original-path="'+escape(path)+'"'}
+document.addEventListener('error',e=>{
+ const img=e.target;
+ if(!(img instanceof HTMLImageElement)||!img.dataset.originalPath)return;
+ const path=img.dataset.originalPath;
+ if(img.dataset.imageFallback!=='tried'&&!/^https?:\/\//i.test(path)){
+  img.dataset.imageFallback='tried';
+  img.src=new URL(path,document.baseURI).href;
+  return;
+ }
+ img.style.display='none';
+ if(!img.parentElement?.querySelector('.image-error')){
+  const message=document.createElement('span');
+  message.className='image-error';
+  message.textContent='Bild noch nicht verfügbar – bitte in 1–2 Minuten aktualisieren.';
+  img.parentElement?.append(message);
+ }
+},true);
 function getImages(p){if(Array.isArray(p?.images)){const a=p.images.filter(x=>typeof x==='string'&&x.trim());if(a.length||!p.image)return a.slice(0,3)}return typeof p?.image==='string'&&p.image?[p.image]:[]}
 function normalizePlaces(data){return data.filter(p=>p&&typeof p.id==='string'&&typeof p.title==='string').map(p=>{const images=getImages(p);return {...p,area:p.area||p.title,description:p.description||'',images,image:images[0]||null}})}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(found));}catch(e){}}
@@ -75,8 +108,8 @@ $('#empty').style.display=list.length?'none':'block';
 $('#cards').innerHTML=list.map(p=>{
 const num=String(PLACES.indexOf(p)+1).padStart(2,'0'),yes=!!found[p.id];
 const photos=getImages(p);
-const pic=photos.length?'<button class="zoom" data-zoom="'+escape(p.id)+'" data-photo="0" title="Screenshot vergrößern"><img src="'+escape(photos[0])+'" loading="lazy" alt="Kürbis-Fundort '+escape(p.title)+'"><span class="zoom-label">⛶ Bild vergrößern'+(photos.length>1?' · '+photos.length+' Bilder':'')+'</span></button>':'<div class="no-image"><span>▧</span><small>SCREENSHOT FOLGT</small></div>';
-const thumbnails=photos.length>1?'<div class="photo-strip">'+photos.map((src,i)=>'<button type="button" data-zoom="'+escape(p.id)+'" data-photo="'+i+'" aria-label="Bild '+(i+1)+' von '+photos.length+' vergrößern"><img src="'+escape(src)+'" loading="lazy" alt="Vorschau '+(i+1)+'"></button>').join('')+'</div>':'';
+const pic=photos.length?'<button class="zoom" data-zoom="'+escape(p.id)+'" data-photo="0" title="Screenshot vergrößern"><img '+imageAttrs(photos[0])+' loading="lazy" alt="Kürbis-Fundort '+escape(p.title)+'"><span class="zoom-label">⛶ Bild vergrößern'+(photos.length>1?' · '+photos.length+' Bilder':'')+'</span></button>':'<div class="no-image"><span>▧</span><small>SCREENSHOT FOLGT</small></div>';
+const thumbnails=photos.length>1?'<div class="photo-strip">'+photos.map((src,i)=>'<button type="button" data-zoom="'+escape(p.id)+'" data-photo="'+i+'" aria-label="Bild '+(i+1)+' von '+photos.length+' vergrößern"><img '+imageAttrs(src)+' loading="lazy" alt="Vorschau '+(i+1)+'"></button>').join('')+'</div>':'';
 return '<article class="card '+(yes?'done':'')+'"><div class="card-image">'+pic+'<span class="number">#'+num+'</span>'+(yes?'<span class="found-tag">✓ GEFUNDEN</span>':'')+'</div>'+thumbnails+'<div class="card-body"><div class="meta">FUNDORT '+num+' <b></b> '+escape(p.area)+'</div><h3>'+escape(p.title)+'</h3>'+(p.description?'<p class="desc">'+escape(p.description)+'</p>':'')+'<div class="card-bottom"><span class="tag">📍 NARCO CITY</span><button class="check" type="button" role="checkbox" aria-checked="'+yes+'" aria-label="'+escape(p.title)+' als '+(yes?'nicht gefunden':'gefunden')+' markieren" data-toggle="'+escape(p.id)+'">✓ '+(yes?'Gefunden':'Als gefunden markieren')+'</button></div></div></article>';
 }).join('');
 const done=PLACES.filter(p=>found[p.id]).length,percentage=PLACES.length?Math.round(done/PLACES.length*100):0;
@@ -94,7 +127,11 @@ function showModalPhoto(index){
  if(!modalImages.length)return;
  modalIndex=(index+modalImages.length)%modalImages.length;
  $('#modal-title').textContent=modalTitle;
- $('#modal-image').src=modalImages[modalIndex];
+ $('#modal-image').dataset.originalPath=modalImages[modalIndex];
+ $('#modal-image').dataset.imageFallback='';
+ $('#modal-image').style.display='';
+ $('#modal-image').parentElement?.querySelector('.image-error')?.remove();
+ $('#modal-image').src=imageHref(modalImages[modalIndex]);
  $('#modal-image').alt='Screenshot '+(modalIndex+1)+' von '+modalImages.length+': '+modalTitle;
  $('#modal-count').textContent=(modalIndex+1)+' / '+modalImages.length;
  $('#modal-nav').hidden=modalImages.length<2;
@@ -120,7 +157,7 @@ let pendingRemovedPhotos=new Set();
 function drawExistingPhotos(){
  const selected=PLACES.find(p=>p.id===$('#admin-entry').value);
  const photos=getImages(selected);
- $('#admin-existing-images').innerHTML=photos.map((src,i)=>'<div class="existing-photo'+(pendingRemovedPhotos.has(i)?' to-remove':'')+'"><img src="'+escape(src)+'" alt="Bild '+(i+1)+'"><button type="button" data-remove-photo="'+i+'">'+(pendingRemovedPhotos.has(i)?'↶ Behalten':'✕ Entfernen')+'</button></div>').join('');
+ $('#admin-existing-images').innerHTML=photos.map((src,i)=>'<div class="existing-photo'+(pendingRemovedPhotos.has(i)?' to-remove':'')+'"><img '+imageAttrs(src)+' alt="Bild '+(i+1)+'"><button type="button" data-remove-photo="'+i+'">'+(pendingRemovedPhotos.has(i)?'↶ Behalten':'✕ Entfernen')+'</button></div>').join('');
  const kept=photos.length-pendingRemovedPhotos.size;
  const additions=$('#admin-image').files?.length||0;
  $('#admin-image-note').textContent='Bilder nach dem Speichern: '+(kept+additions)+' von maximal 3 · '+kept+' vorhanden, '+additions+' neu. Originalqualität bleibt erhalten.';
@@ -131,13 +168,24 @@ $('#admin-existing-images').addEventListener('click',e=>{
  if(pendingRemovedPhotos.has(n))pendingRemovedPhotos.delete(n);else pendingRemovedPhotos.add(n);
  drawExistingPhotos();
 });
-$('#admin-image').addEventListener('change',drawExistingPhotos);
+let selectedPreviewUrls=[];
+function refreshSelectedPreviews(){
+ selectedPreviewUrls.forEach(url=>URL.revokeObjectURL(url));
+ selectedPreviewUrls=[];
+ const selected=Array.from($('#admin-image').files||[]);
+ $('#admin-upload-preview').innerHTML=selected.map((file,index)=>{
+  const url=URL.createObjectURL(file);selectedPreviewUrls.push(url);
+  return '<div class="upload-preview"><img src="'+escape(url)+'" alt="Neues Bild '+(index+1)+'"><small>'+escape(file.name)+'</small></div>';
+ }).join('');
+}
+$('#admin-image').addEventListener('change',()=>{refreshSelectedPreviews();drawExistingPhotos()});
 function editorFill(){
   const p=PLACES.find(p=>p.id===$('#admin-entry').value);
   $('#admin-title').value=p?.title||'';
   $('#admin-area').value=p?.area||'';
   $('#admin-description').value=p?.description||'';
   $('#admin-image').value='';
+  refreshSelectedPreviews();
   pendingRemovedPhotos=new Set();
   drawExistingPhotos();
   $('#admin-delete').hidden=!p;
@@ -145,10 +193,17 @@ function editorFill(){
 let publicLoadFailed=false;
 async function loadPublicPlaces(){
   try{
-    const response=await fetch(DATA_FILE+'?v='+Date.now(),{cache:'no-store'});
-    if(!response.ok)throw new Error('HTTP '+response.status);
-    const data=await response.json();
-    if(!Array.isArray(data))throw new Error('Fundortdaten ungültig');
+    let data=null, failure=null;
+    for(const path of [RAW_ROOT+DATA_FILE+'?v='+Date.now(),DATA_FILE+'?v='+Date.now()]){
+      try{
+        const response=await fetch(path,{cache:'no-store'});
+        if(!response.ok)throw new Error('HTTP '+response.status);
+        const candidate=await response.json();
+        if(!Array.isArray(candidate))throw new Error('Fundortdaten ungültig');
+        data=candidate;break;
+      }catch(err){failure=err;}
+    }
+    if(!data)throw failure||new Error('Fundortdaten nicht erreichbar');
     if(adminToken)return; // Während der Verwaltung immer die aktuellen GitHub-Daten verwenden.
     PLACES=normalizePlaces(data);
     publicLoadFailed=false;render();updateEditorSelection();
@@ -160,7 +215,10 @@ function adminApi(path,options={}){
 async function adminRequest(path,options={}){
   const response=await adminApi(path,options);
   const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(data.message||'GitHub-Fehler: '+response.status);
+  if(!response.ok){
+    const details=Array.isArray(data.errors)?' '+data.errors.map(e=>e.message||e.code||'').join(', '):'';
+    throw new Error('GitHub HTTP '+response.status+': '+(data.message||'Unbekannter Fehler')+details);
+  }
   return data;
 }
 function fileToBase64(file){
@@ -184,7 +242,9 @@ async function uploadGitHubFile(path,base64,message){
   else if(old.status!==404){const e=await old.json().catch(()=>({}));throw new Error(e.message||'Dateizugriff fehlgeschlagen')}
   const body={message,content:base64,branch:GITHUB_BRANCH};
   if(sha)body.sha=sha;
-  return adminRequest(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const saved=await adminRequest(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!saved?.content?.sha||saved.content.path!==path)throw new Error('GitHub hat die Datei nicht eindeutig bestätigt: '+path);
+  return saved;
 }
 async function loadGitHubPlaces(){
   const result=await adminRequest('/repos/'+GITHUB_REPO+'/contents/'+DATA_FILE+'?ref='+GITHUB_BRANCH+'&t='+Date.now());
@@ -239,6 +299,9 @@ $('#admin-edit-form').addEventListener('submit',async(e)=>{
       const ext=file.type==='image/png'?'png':file.type==='image/jpeg'?'jpg':'webp';
       const path='assets/originale/'+item.id+'-'+Date.now()+'-'+i+'.'+ext;
       await uploadGitHubFile(path,await fileToBase64(file),'Add original screenshot '+(i+1)+' for '+title);
+      // Vor dem Veröffentlichen sicherstellen, dass GitHub den Dateipfad kennt.
+      const check=await adminRequest('/repos/'+GITHUB_REPO+'/contents/'+path+'?ref='+GITHUB_BRANCH+'&v='+Date.now());
+      if(!check.sha)throw new Error('Bild '+(i+1)+' wurde noch nicht bestätigt. Bitte erneut versuchen.');
       item.images.push(path);
     }
     item.image=item.images[0]||null;
@@ -248,8 +311,10 @@ $('#admin-edit-form').addEventListener('submit',async(e)=>{
     const next=original?latest.map(p=>p.id===id?item:p):[...latest,item];
     await uploadGitHubFile(DATA_FILE,textToBase64(JSON.stringify(next,null,2)+'\n'),'Update pumpkin hunt locations');
     await refreshEditorFromGitHub();
+    const verified=PLACES.find(p=>p.id===item.id);
+    if(!verified||getImages(verified).length!==item.images.length)throw new Error('Der Fundort wurde zwar gesendet, aber die gespeicherten Bilder konnten noch nicht überprüft werden. Bitte nicht erneut hochladen, sondern erst die Seite aktualisieren.');
     $('#admin-entry').value=item.id;editorFill();
-    setAdminStatus('✅ Veröffentlicht! Die Änderung ist auf GitHub gespeichert. Bis GitHub Pages sie öffentlich zeigt, kann es ein paar Minuten dauern.');
+    setAdminStatus('✅ Gespeichert und geprüft: '+getImages(verified).length+' Bild(er) bei „'+verified.title+'“. Die öffentliche Seite lädt die Bilder direkt von GitHub. Falls sie kurz fehlen, in 1–2 Minuten aktualisieren.');
   }catch(err){setAdminStatus('❌ Veröffentlichung fehlgeschlagen: '+err.message)}
   finally{setAdminBusy(false)}
 });
