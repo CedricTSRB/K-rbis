@@ -81,8 +81,10 @@
     "title": "5004 - Hinterm Denkmal",
     "area": "5004 - Hinterm Denkmal",
     "description": "",
-    "images": [],
-    "image": null
+    "images": [
+      "assets/originale/fundort-addc0ade-413e-4837-bc5b-ef1b61e76682-1792597249022-0.png"
+    ],
+    "image": "assets/originale/fundort-addc0ade-413e-4837-bc5b-ef1b61e76682-1792597249022-0.png"
   },
   {
     "id": "fundort-b45307fd-eb34-4c7f-82d3-4717724784fa",
