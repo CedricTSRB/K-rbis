@@ -99,7 +99,18 @@ document.addEventListener('error',e=>{
  }
 },true);
 function getImages(p){if(Array.isArray(p?.images)){const a=p.images.filter(x=>typeof x==='string'&&x.trim());if(a.length||!p.image)return a.slice(0,3)}return typeof p?.image==='string'&&p.image?[p.image]:[]}
-function normalizePlaces(data){return data.filter(p=>p&&typeof p.id==='string'&&typeof p.title==='string').map(p=>{const images=getImages(p);return {...p,area:p.area||p.title,description:p.description||'',images,image:images[0]||null}})}
+// Fundorte nach ihrer eingegebenen Zahl (z. B. 705, 5000, 10130) sortieren.
+// Einträge ohne führende Fundortnummer bleiben in ihrer bisherigen Reihenfolge am Ende.
+function placeNumber(p){
+ const pattern=/^\s*(?:#\s*|nr\.?\s*|fundort\s*#?\s*)?(\d+)(?=\D|$)/i;
+ const match=pattern.exec(p.title)||pattern.exec(p.area||'');
+ return match?Number(match[1]):Infinity;
+}
+function normalizePlaces(data){
+ return data.filter(p=>p&&typeof p.id==='string'&&typeof p.title==='string')
+  .map(p=>{const images=getImages(p);return {...p,area:p.area||p.title,description:p.description||'',images,image:images[0]||null}})
+  .sort((a,b)=>{const aNumber=placeNumber(a),bNumber=placeNumber(b);return aNumber===bNumber?0:aNumber-bNumber});
+}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(found));}catch(e){}}
 function render(){
 const search=$('#search').value.trim().toLocaleLowerCase('de');
