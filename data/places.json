@@ -1,5 +1,12 @@
 [
   {
+    "id": "strandpromenade",
+    "title": "Strandpromenade",
+    "area": "Strandpromenade",
+    "description": "",
+    "image": "assets/strandpromenade.webp"
+  },
+  {
     "id": "halloween-park",
     "title": "Halloween-Park",
     "area": "Halloween-Park",
