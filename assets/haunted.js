@@ -2,19 +2,16 @@
 (()=>{
 'use strict';
 const q=id=>document.getElementById(id);
-const settings=q('halloween-settings'),enabled=q('halloween-scares-enabled'),volume=q('halloween-scare-volume'),value=q('halloween-volume-value'),frequency=q('halloween-scare-frequency'),atmosphere=q('halloween-atmosphere-enabled'),preview=q('halloween-scare-preview');
+const settings=q('halloween-settings'),enabled=q('halloween-scares-enabled'),frequency=q('halloween-scare-frequency'),atmosphere=q('halloween-atmosphere-enabled'),preview=q('halloween-scare-preview');
 const cover=q('halloween-scare'),face=cover.querySelector('.halloween-scare-face'),caption=cover.querySelector('strong');
-const keys={enabled:'narco-halloween-scares-enabled',volume:'narco-halloween-scare-volume',frequency:'narco-halloween-frequency',atmosphere:'narco-halloween-atmosphere'};
+const keys={enabled:'narco-halloween-scares-enabled',frequency:'narco-halloween-frequency',atmosphere:'narco-halloween-atmosphere'};
 const store={get(k,fallback){try{const v=localStorage.getItem(k);return v===null?fallback:v}catch{return fallback}},set(k,v){try{localStorage.setItem(k,String(v))}catch{}}};
 enabled.checked=store.get(keys.enabled,'true')!=='false';
-volume.value=String(Math.max(0,Math.min(100,Number(store.get(keys.volume,'24'))||0)));
 frequency.value=['rare','normal','often'].includes(store.get(keys.frequency,'normal'))?store.get(keys.frequency,'normal'):'normal';
 atmosphere.checked=store.get(keys.atmosphere,'true')!=='false';
-const updateVolume=()=>{value.textContent=volume.value+' %';volume.setAttribute('aria-valuetext',volume.value+' Prozent')};
 const updateAtmosphere=()=>document.body.classList.toggle('haunt-paused',!atmosphere.checked);
-updateVolume();updateAtmosphere();
+updateAtmosphere();
 enabled.addEventListener('change',()=>store.set(keys.enabled,enabled.checked));
-volume.addEventListener('input',()=>{updateVolume();store.set(keys.volume,volume.value)});
 frequency.addEventListener('change',()=>store.set(keys.frequency,frequency.value));
 atmosphere.addEventListener('change',()=>{store.set(keys.atmosphere,atmosphere.checked);updateAtmosphere()});
 q('halloween-settings-open').addEventListener('click',()=>settings.showModal());
@@ -31,11 +28,11 @@ const variants=[
 let last=-1,lastAt=0,closing=null,unlocked=false,audioCtx=null,nextAmbient=null,ambientReady=false;
 const random=(min,max)=>Math.random()*(max-min)+min;
 const pick=()=>{let i=Math.floor(Math.random()*variants.length);if(i===last)i=(i+1+Math.floor(Math.random()*(variants.length-1)))%variants.length;last=i;return variants[i]};
-const canSound=()=>Number(volume.value)>0 && unlocked;
+const canSound=()=>unlocked;
 function context(){try{if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;audioCtx=new AC()}if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch{return null}}
 function tone(ac,at,opts={}){const osc=ac.createOscillator(),amp=ac.createGain();osc.type=opts.type||'sawtooth';const duration=opts.duration||.5;osc.frequency.setValueAtTime(Math.max(opts.start||300,1),at);osc.frequency.exponentialRampToValueAtTime(Math.max(opts.end||80,1),at+duration);amp.gain.setValueAtTime(.0001,at);amp.gain.exponentialRampToValueAtTime(Math.max(opts.gain||.04,.0001),at+.025);amp.gain.exponentialRampToValueAtTime(.0001,at+duration);osc.connect(amp);amp.connect(opts.out||ac.destination);osc.start(at);osc.stop(at+duration+.03)}
 function noise(ac,at,duration,gain,filterFreq=600,out=ac.destination){const length=Math.ceil(ac.sampleRate*duration),buffer=ac.createBuffer(1,length,ac.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<length;i++)data[i]=(Math.random()*2-1);const src=ac.createBufferSource(),filter=ac.createBiquadFilter(),amp=ac.createGain();filter.type='lowpass';filter.frequency.value=filterFreq;amp.gain.setValueAtTime(.0001,at);amp.gain.exponentialRampToValueAtTime(gain,at+.025);amp.gain.exponentialRampToValueAtTime(.0001,at+duration);src.buffer=buffer;src.connect(filter);filter.connect(amp);amp.connect(out);src.start(at);src.stop(at+duration+.02)}
-function sound(kind){if(!canSound())return;const ac=context();if(!ac)return;const n=ac.currentTime+.015,master=ac.createGain();master.gain.value=Math.pow(Number(volume.value)/100,1.6)*.45;master.connect(ac.destination);
+function sound(kind){if(!canSound())return;const ac=context();if(!ac)return;const n=ac.currentTime+.015,master=ac.createGain();master.gain.value=0.23;master.connect(ac.destination);
  try{switch(kind){
  case 'skull':tone(ac,n,{start:560,end:55,type:'sawtooth',duration:.72,gain:.35,out:master});noise(ac,n,.55,.18,1300,master);break;
  case 'demon':tone(ac,n,{start:240,end:38,type:'square',duration:.77,gain:.22,out:master});tone(ac,n+.1,{start:740,end:75,duration:.51,gain:.15,out:master});break;
