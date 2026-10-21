@@ -58,13 +58,35 @@ body{background:radial-gradient(ellipse 90% 32% at 50% 0%,#5b244d55,transparent 
 @keyframes float-pumpkin{50%{transform:translateY(-14px) rotate(5deg)}}
 @media(prefers-reduced-motion:reduce){.sketch span,.logo-icon,.halloween-scare.active,.halloween-scare-face{animation:none!important}}
 
+
+.suggestion-dialog{width:min(540px,95vw);padding:22px}
+.suggestion-dialog h2{font-size:33px;color:#ffbb70}
+.suggestion-dialog p{color:#cdbac7;font-size:13px;line-height:1.6}
+.suggestion-form{display:grid;gap:12px}
+.suggestion-form label{display:grid;gap:6px;font-size:12px;font-weight:800;color:#ffd5aa}
+.suggestion-form input,.suggestion-form textarea{width:100%;background:#1d1622;color:white;border:1px solid #705061;border-radius:9px;padding:12px;resize:vertical}
+.suggestion-form textarea{min-height:95px}
+.suggestion-send{border:0;border-radius:10px;padding:14px;background:linear-gradient(115deg,#ffc078,#ff812f);color:#241009;font-weight:900}
+@media(max-width:660px){.nav-actions{flex-wrap:wrap;justify-content:flex-end}.halloween-settings-launch{font-size:10px;padding:8px}.nav{height:auto;min-height:75px;padding:10px 0}.logo small{font-size:8px}}
 </style></head>
-<body><header class="top"><div class="wrap nav"><a class="logo" href="#start"><span class="logo-icon">🎃</span><span><strong>NARCO<span>CITY</span></strong><small>HALLOWEEN EVENT GUIDE</small></span></a><div class="nav-actions"><span class="badge"><i></i>KÜRBISSUCHE 2026</span><button class="halloween-settings-launch" id="halloween-settings-open" type="button" aria-label="Halloween-Einstellungen öffnen">⚙️ Einstellungen</button><button class="admin-launch" id="admin-open" type="button">⚙ Verwalten</button></div></div></header>
+<body><header class="top"><div class="wrap nav"><a class="logo" href="#start"><span class="logo-icon">🎃</span><span><strong>NARCO<span>CITY</span></strong><small>HALLOWEEN EVENT GUIDE</small></span></a><div class="nav-actions"><span class="badge"><i></i>KÜRBISSUCHE 2026</span><button class="halloween-settings-launch" id="suggestion-open" type="button">💡 Vorschläge</button><button class="halloween-settings-launch" id="halloween-settings-open" type="button" aria-label="Halloween-Einstellungen öffnen">⚙️ Einstellungen</button><button class="admin-launch" id="admin-open" type="button">⚙ Verwalten</button></div></div></header>
 <main id="start"><section class="hero"><div class="wrap hero-row"><div class="hero-copy"><span class="kicker">NARCO CITY · HALLOWEEN SPECIAL</span><h1>FINDE<br><em>ALLE KÜRBISSE.</em></h1><p class="intro">Alle Kürbis-Fundorte auf einen Blick: Screenshots ansehen, Kürbisse finden und direkt abhaken.</p><a class="action" href="#fundorte">FUNDORTE ENTDECKEN ↗</a></div><div class="sketch" aria-hidden="true"><span>🎃</span></div></div></section>
 <div class="wrap"><section class="stats" aria-label="Dein Fortschritt"><div class="stat"><div class="stat-icon">📍</div><div><strong id="total">0</strong><small>Fundorte</small></div></div><div class="stat"><div class="stat-icon">✅</div><div><strong id="found">0</strong><small>Gefunden</small></div></div><div class="stat"><div class="stat-icon">⌛</div><div><strong id="open">0</strong><small>Noch offen</small></div></div></section><div class="progress-row"><div class="progress-track" id="progress-track" role="progressbar" aria-label="Fortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progress"></div></div><div class="progress-percent" id="percent">0% ERLEDIGT</div></div></div>
 <section class="wrap locations" id="fundorte"><div class="location-title"><div><span class="overline">DEINE PERSÖNLICHE CHECKLISTE</span><h2>ALLE <span>FUNDORTE</span></h2><p>Klicke auf ein Bild, um es groß zu sehen, und markiere gefundene Kürbisse.</p></div><button class="reset" id="reset" type="button">↻ Zurücksetzen</button></div><div class="toolbar"><input class="search" id="search" type="search" placeholder="⌕  Fundort suchen ..." aria-label="Fundorte suchen"><div class="tabs" role="group" aria-label="Fundorte filtern"><button class="tab active" data-filter="all" aria-pressed="true">Alle</button><button class="tab" data-filter="open" aria-pressed="false">Noch offen</button><button class="tab" data-filter="found" aria-pressed="false">Gefunden</button></div></div><div class="cards" id="cards"></div><div class="empty" id="empty">🎃 <strong>Keine passenden Fundorte gefunden.</strong><br>Versuche einen anderen Suchbegriff oder Filter.</div><aside class="tip">💡 <strong>Dein Fortschritt gehört dir:</strong> Die Häkchen bleiben auf deinem Gerät im selben Browser gespeichert. Andere Besucher haben ihre eigene Liste. Wenn du Browser oder Gerät wechselst, wird dein Fortschritt nicht automatisch übertragen.</aside></section></main>
 <footer class="foot"><div class="wrap foot-inner"><strong>NARCO<span>CITY</span> 🎃</strong><span>Inoffizieller Community-Guide · Halloween 2026</span></div></footer>
 
+
+<dialog class="suggestion-dialog" id="suggestion-dialog" aria-label="Fehlenden Kürbis vorschlagen">
+<div class="modal-head"><h2>💡 Kürbis vorschlagen</h2><button type="button" id="suggestion-close">✕ Schließen</button></div>
+<p>Fehlt ein Kürbis in der Liste? Schick deinen Fundort als Vorschlag. Er wird erst nach Prüfung eingetragen.</p>
+<form class="suggestion-form" id="suggestion-form">
+<label>Kürbis-Nummer (falls bekannt)<input id="suggestion-number" type="text" maxlength="35" placeholder="z. B. 705"></label>
+<label>Fundort / Bereich *<input id="suggestion-place" type="text" maxlength="150" required placeholder="Wo steht der Kürbis?"></label>
+<label>Beschreibung *<textarea id="suggestion-description" maxlength="1200" required placeholder="Beschreibe möglichst genau, wie man den Kürbis findet."></textarea></label>
+<label>Screenshot-Link (optional)<input id="suggestion-image" type="url" maxlength="1000" placeholder="https://..."></label>
+<p>Zum Absenden wird GitHub geöffnet. Dafür brauchst du ein GitHub-Konto. Dein Vorschlag ist dort öffentlich sichtbar.</p>
+<button class="suggestion-send" type="submit">🎃 Vorschlag bei GitHub einreichen ↗</button>
+</form></dialog>
 <dialog id="halloween-settings" class="halloween-settings" aria-label="Halloween-Einstellungen">
 <div class="modal-head"><h2>⚙️ Einstellungen</h2><button id="halloween-settings-close" type="button">✕ Schließen</button></div>
 <p>Spuk-Effekte der Kürbissuche anpassen.</p>
@@ -173,6 +195,25 @@ const z=e.target.closest('[data-zoom]');if(z){const p=PLACES.find(p=>p.id===z.da
 $('#search').addEventListener('input',render);
 document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(t=>{t.classList.toggle('active',t===b);t.setAttribute('aria-pressed',String(t===b))});render()}));
 $('#reset').addEventListener('click',()=>{if(!PLACES.some(p=>found[p.id]))return;if(confirm('Alle Häkchen entfernen?')){found={};save();render()}});
+
+
+const suggestionDialog=document.getElementById('suggestion-dialog');
+document.getElementById('suggestion-open').addEventListener('click',()=>suggestionDialog.showModal());
+document.getElementById('suggestion-close').addEventListener('click',()=>suggestionDialog.close());
+document.getElementById('suggestion-form').addEventListener('submit',event=>{
+ event.preventDefault();
+ const number=document.getElementById('suggestion-number').value.trim();
+ const place=document.getElementById('suggestion-place').value.trim();
+ const description=document.getElementById('suggestion-description').value.trim();
+ const image=document.getElementById('suggestion-image').value.trim();
+ if(!place||!description)return;
+ const title='🎃 Fehlender Kürbis'+(number?' #'+number:'')+': '+place;
+ const body='## Fundort-Vorschlag\\n'.replace('\\n','\n')+
+  '**Nummer:** '+(number||'Unbekannt')+'\n\n**Fundort:** '+place+'\n\n**Beschreibung:**\n'+description+
+  '\n\n**Screenshot:** '+(image||'Nicht angegeben')+'\n\n_Eingereicht über die Kürbissuche-Webseite._';
+ const url='https://github.com/CedricTSRB/K-rbis/issues/new?'+new URLSearchParams({title,body}).toString();
+ window.open(url,'_blank','noopener,noreferrer');
+});
 
 const halloweenSettings=document.getElementById('halloween-settings');
 const halloweenEnabled=document.getElementById('halloween-scares-enabled');
