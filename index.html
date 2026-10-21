@@ -194,23 +194,42 @@ let publicLoadFailed=false;
 async function loadPublicPlaces(){
   try{
     let data=null, failure=null;
-    for(const path of [RAW_ROOT+DATA_FILE+'?v='+Date.now(),DATA_FILE+'?v='+Date.now()]){
+    const sources=[
+      'https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+DATA_FILE+'?ref='+GITHUB_BRANCH+'&v='+Date.now(),
+      RAW_ROOT+DATA_FILE+'?v='+Date.now(),
+      DATA_FILE+'?v='+Date.now()
+    ];
+    for(const path of sources){
       try{
         const response=await fetch(path,{cache:'no-store'});
         if(!response.ok)throw new Error('HTTP '+response.status);
-        const candidate=await response.json();
+        let candidate;
+        if(path.startsWith('https://api.github.com/')){
+          const payload=await response.json();
+          if(typeof payload.content!=='string'||payload.encoding!=='base64')throw new Error('GitHub API hat keine lesbaren Fundortdaten geliefert');
+          const decoded=Uint8Array.from(atob(payload.content.replace(/\s/g,'')),c=>c.charCodeAt(0));
+          candidate=JSON.parse(new TextDecoder().decode(decoded));
+        }else{
+          candidate=await response.json();
+        }
         if(!Array.isArray(candidate))throw new Error('Fundortdaten ungültig');
         data=candidate;break;
       }catch(err){failure=err;}
     }
     if(!data)throw failure||new Error('Fundortdaten nicht erreichbar');
-    if(adminToken)return; // Während der Verwaltung immer die aktuellen GitHub-Daten verwenden.
+    if(adminToken)return; // Während der Verwaltung die authentifizierten GitHub-Daten verwenden.
     PLACES=normalizePlaces(data);
     publicLoadFailed=false;render();updateEditorSelection();
-  }catch(err){publicLoadFailed=true;console.error('Fundortdaten konnten nicht geladen werden:',err);$('#empty').textContent='⚠ Fundorte konnten nicht geladen werden. Bitte Seite neu laden.';$('#empty').style.display='block';if(adminToken)setAdminStatus('⚠ Öffentliche Fundortliste noch nicht aktualisiert. GitHub-Veröffentlichung kann einige Minuten dauern.');}
+  }catch(err){
+    publicLoadFailed=true;
+    console.error('Fundortdaten konnten nicht geladen werden:',err);
+    $('#empty').textContent='⚠ Fundorte konnten nicht geladen werden. Bitte Seite neu laden.';
+    $('#empty').style.display='block';
+    if(adminToken)setAdminStatus('⚠ Öffentliche Fundortliste noch nicht aktualisiert.');
+  }
 }
 function adminApi(path,options={}){
-  return fetch('https://api.github.com'+path,{...options,headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+adminToken,'X-GitHub-Api-Version':'2022-11-28',...(options.headers||{})}});
+  return fetch('https://api.github.com'+path,{...options,cache:'no-store',headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+adminToken,'X-GitHub-Api-Version':'2022-11-28',...(options.headers||{})}});
 }
 async function adminRequest(path,options={}){
   const response=await adminApi(path,options);
@@ -237,7 +256,7 @@ function textToBase64(value){
 async function uploadGitHubFile(path,base64,message){
   const url='/repos/'+GITHUB_REPO+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
   let sha;
-  const old=await adminApi(url+'?ref='+GITHUB_BRANCH);
+  const old=await adminApi(url+'?ref='+GITHUB_BRANCH+'&v='+Date.now());
   if(old.ok){const data=await old.json();sha=data.sha}
   else if(old.status!==404){const e=await old.json().catch(()=>({}));throw new Error(e.message||'Dateizugriff fehlgeschlagen')}
   const body={message,content:base64,branch:GITHUB_BRANCH};
@@ -312,9 +331,9 @@ $('#admin-edit-form').addEventListener('submit',async(e)=>{
     await uploadGitHubFile(DATA_FILE,textToBase64(JSON.stringify(next,null,2)+'\n'),'Update pumpkin hunt locations');
     await refreshEditorFromGitHub();
     const verified=PLACES.find(p=>p.id===item.id);
-    if(!verified||getImages(verified).length!==item.images.length)throw new Error('Der Fundort wurde zwar gesendet, aber die gespeicherten Bilder konnten noch nicht überprüft werden. Bitte nicht erneut hochladen, sondern erst die Seite aktualisieren.');
+    if(!verified||verified.title!==item.title||verified.area!==item.area||verified.description!==item.description||JSON.stringify(getImages(verified))!==JSON.stringify(item.images))throw new Error('Die gespeicherten Fundortdaten stimmen nicht mit deinen Eingaben überein. Bitte erst die GitHub-Liste überprüfen und nicht sofort erneut hochladen.');
     $('#admin-entry').value=item.id;editorFill();
-    setAdminStatus('✅ Gespeichert und geprüft: '+getImages(verified).length+' Bild(er) bei „'+verified.title+'“. Die öffentliche Seite lädt die Bilder direkt von GitHub. Falls sie kurz fehlen, in 1–2 Minuten aktualisieren.');
+    setAdminStatus('✅ Fundort „'+verified.title+'“ dauerhaft auf GitHub gespeichert und alle Angaben überprüft ('+getImages(verified).length+' Bild(er)). Du kannst die Seite jetzt neu laden.');
   }catch(err){setAdminStatus('❌ Veröffentlichung fehlgeschlagen: '+err.message)}
   finally{setAdminBusy(false)}
 });
@@ -328,7 +347,7 @@ $('#admin-delete').addEventListener('click',async()=>{
     if(!latest.some(p=>p.id===id))throw new Error('Der Fundort ist bereits auf GitHub gelöscht. Bitte die Seite neu laden.');
     const next=latest.filter(p=>p.id!==id);
     await uploadGitHubFile(DATA_FILE,textToBase64(JSON.stringify(next,null,2)+'\n'),'Remove pumpkin hunt location');
-    await refreshEditorFromGitHub();setAdminStatus('✅ Löschung auf GitHub gespeichert und überprüft. Bis die öffentliche Webseite aktualisiert ist, kann es wenige Minuten dauern.');
+    await refreshEditorFromGitHub();if(PLACES.some(p=>p.id===id))throw new Error('Der Fundort ist weiterhin auf GitHub vorhanden.');setAdminStatus('✅ Löschung auf GitHub gespeichert und überprüft. Bis die öffentliche Webseite aktualisiert ist, kann es wenige Minuten dauern.');
   }catch(err){setAdminStatus('❌ Löschen fehlgeschlagen: '+err.message)}
   finally{setAdminBusy(false)}
 });
