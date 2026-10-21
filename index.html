@@ -44,14 +44,7 @@
 <script>
 'use strict';
 // Hier neue Fundorte ergänzen. Bilder im Ordner assets/ ablegen. Die IDs niemals ändern, damit Häkchen gespeichert bleiben.
-let PLACES=[
-{id:'epsilon-anwesen',title:'Epsilon-Anwesen',area:'Epsilon-Anwesen',image:null},
-{id:'strandpromenade',title:'Strandpromenade',area:'Strandpromenade',image:'assets/strandpromenade.webp'},
-{id:'halloween-park',title:'Halloween-Park',area:'Halloween-Park',image:'assets/halloween-park.webp'},
-{id:'seitengasse-parkhaus',title:'Seitengasse am Parkhaus',area:'Parkhaus',image:'assets/seitengasse-parkhaus.webp'},
-{id:'kuestensteg',title:'Steg an der Küste',area:'Küste',image:'assets/kuestensteg.webp'},
-{id:'flughafen',title:'Los Santos Airport',area:'Flughafen',image:'assets/flughafen.webp'}
-];
+let PLACES=[];
 const $=s=>document.querySelector(s);
 const KEY='narco-city-kuerbissuche-2026-v1';
 let found={};try{const saved=JSON.parse(localStorage.getItem(KEY)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))found=saved;}catch(e){}
@@ -100,6 +93,7 @@ function editorFill(){
   $('#admin-image-note').textContent=p?.image?'Bisheriges Bild: '+p.image+' – Ein neues Bild ersetzt es.':'Originaldatei unverändert hochladen – kein Qualitätsverlust.';
   $('#admin-delete').hidden=!p;
 }
+let publicLoadFailed=false;
 async function loadPublicPlaces(){
   try{
     const response=await fetch(DATA_FILE+'?v='+Date.now(),{cache:'no-store'});
@@ -107,8 +101,8 @@ async function loadPublicPlaces(){
     const data=await response.json();
     if(!Array.isArray(data))throw new Error('Fundortdaten ungültig');
     PLACES=data.filter(p=>p&&typeof p.id==='string'&&typeof p.title==='string').map(p=>({id:p.id,title:p.title,area:p.area||p.title,description:p.description||'',image:p.image||null}));
-    render();updateEditorSelection();
-  }catch(err){console.warn('Nutze vorhandene Fundorte:',err)}
+    publicLoadFailed=false;render();updateEditorSelection();
+  }catch(err){publicLoadFailed=true;console.error('Fundortdaten konnten nicht geladen werden:',err);$('#empty').textContent='⚠ Fundorte konnten nicht geladen werden. Bitte Seite neu laden.';$('#empty').style.display='block';if(adminToken)setAdminStatus('⚠ Öffentliche Fundortliste noch nicht aktualisiert. GitHub-Veröffentlichung kann einige Minuten dauern.');}
 }
 function adminApi(path,options={}){
   return fetch('https://api.github.com'+path,{...options,headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+adminToken,'X-GitHub-Api-Version':'2022-11-28',...(options.headers||{})}});
@@ -142,8 +136,18 @@ async function uploadGitHubFile(path,base64,message){
   if(sha)body.sha=sha;
   return adminRequest(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 }
+async function loadGitHubPlaces(){
+  const result=await adminRequest('/repos/'+GITHUB_REPO+'/contents/'+DATA_FILE+'?ref='+GITHUB_BRANCH+'&t='+Date.now());
+  const decoded=Uint8Array.from(atob(result.content.replace(/\\s/g,'')),c=>c.charCodeAt(0));
+  const data=JSON.parse(new TextDecoder().decode(decoded));
+  if(!Array.isArray(data))throw new Error('Gespeicherte Fundorte sind ungültig');
+  return data;
+}
+async function refreshEditorFromGitHub(){
+  PLACES=await loadGitHubPlaces();publicLoadFailed=false;render();updateEditorSelection();
+}
 function setAdminBusy(busy){
-  $('#admin-save').disabled=busy;$('#admin-delete').disabled=busy;$('#admin-new').disabled=busy;
+  $('#admin-save').disabled=busy;$('#admin-delete').disabled=busy;$('#admin-new').disabled=busy;$('#admin-entry').disabled=busy;
 }
 $('#admin-open').addEventListener('click',()=>{$('#admin-dialog').showModal();setAdminStatus('')});
 $('#admin-close').addEventListener('click',()=>$('#admin-dialog').close());
@@ -160,7 +164,7 @@ $('#admin-auth-form').addEventListener('submit',async(e)=>{
     await adminRequest('/repos/'+GITHUB_REPO+'/contents/'+DATA_FILE+'?ref='+GITHUB_BRANCH);
     $('#admin-token').value='';
     $('#admin-login').hidden=true;$('#admin-panel').hidden=false;
-    updateEditorSelection();setAdminStatus('Angemeldet als '+u.login+'. Du kannst jetzt Fundorte veröffentlichen.');
+    await refreshEditorFromGitHub();setAdminStatus('Angemeldet als '+u.login+'. Aktuelle Fundorte von GitHub geladen.');
   }catch(err){adminToken='';setAdminStatus('Anmeldung nicht möglich: '+err.message)}
 });
 $('#admin-edit-form').addEventListener('submit',async(e)=>{
@@ -185,9 +189,11 @@ $('#admin-edit-form').addEventListener('submit',async(e)=>{
       item.image=path;
     }
     setAdminStatus('Fundort wird auf der Webseite veröffentlicht …');
-    const next=original?PLACES.map(p=>p.id===id?item:p):[...PLACES,item];
+    const latest=await loadGitHubPlaces();
+    if(original&&!latest.some(p=>p.id===id))throw new Error('Dieser Fundort wurde inzwischen gelöscht. Bitte die Liste aktualisieren.');
+    const next=original?latest.map(p=>p.id===id?item:p):[...latest,item];
     await uploadGitHubFile(DATA_FILE,textToBase64(JSON.stringify(next,null,2)+'\n'),'Update pumpkin hunt locations');
-    PLACES=next;render();updateEditorSelection();
+    await refreshEditorFromGitHub();
     $('#admin-entry').value=item.id;editorFill();
     setAdminStatus('✅ Veröffentlicht! Die Änderung ist auf GitHub gespeichert. Bis GitHub Pages sie öffentlich zeigt, kann es ein paar Minuten dauern.');
   }catch(err){setAdminStatus('❌ Veröffentlichung fehlgeschlagen: '+err.message)}
@@ -199,9 +205,11 @@ $('#admin-delete').addEventListener('click',async()=>{
   if(!place||!adminToken||!confirm('Fundort „'+place.title+'“ wirklich von der Webseite entfernen?'))return;
   setAdminBusy(true);setAdminStatus('Entferne Fundort …');
   try{
-    const next=PLACES.filter(p=>p.id!==id);
+    const latest=await loadGitHubPlaces();
+    if(!latest.some(p=>p.id===id))throw new Error('Der Fundort ist bereits auf GitHub gelöscht. Bitte die Seite neu laden.');
+    const next=latest.filter(p=>p.id!==id);
     await uploadGitHubFile(DATA_FILE,textToBase64(JSON.stringify(next,null,2)+'\n'),'Remove pumpkin hunt location');
-    PLACES=next;render();updateEditorSelection();setAdminStatus('✅ Fundort entfernt. Bereits gespeicherte Häkchen anderer Fundorte bleiben erhalten.');
+    await refreshEditorFromGitHub();setAdminStatus('✅ Löschung auf GitHub gespeichert und überprüft. Bis die öffentliche Webseite aktualisiert ist, kann es wenige Minuten dauern.');
   }catch(err){setAdminStatus('❌ Löschen fehlgeschlagen: '+err.message)}
   finally{setAdminBusy(false)}
 });
