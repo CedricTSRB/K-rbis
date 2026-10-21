@@ -100,6 +100,7 @@ async function loadPublicPlaces(){
     if(!response.ok)throw new Error('HTTP '+response.status);
     const data=await response.json();
     if(!Array.isArray(data))throw new Error('Fundortdaten ungültig');
+    if(adminToken)return; // Während der Verwaltung immer die aktuellen GitHub-Daten verwenden.
     PLACES=data.filter(p=>p&&typeof p.id==='string'&&typeof p.title==='string').map(p=>({id:p.id,title:p.title,area:p.area||p.title,description:p.description||'',image:p.image||null}));
     publicLoadFailed=false;render();updateEditorSelection();
   }catch(err){publicLoadFailed=true;console.error('Fundortdaten konnten nicht geladen werden:',err);$('#empty').textContent='⚠ Fundorte konnten nicht geladen werden. Bitte Seite neu laden.';$('#empty').style.display='block';if(adminToken)setAdminStatus('⚠ Öffentliche Fundortliste noch nicht aktualisiert. GitHub-Veröffentlichung kann einige Minuten dauern.');}
@@ -138,7 +139,7 @@ async function uploadGitHubFile(path,base64,message){
 }
 async function loadGitHubPlaces(){
   const result=await adminRequest('/repos/'+GITHUB_REPO+'/contents/'+DATA_FILE+'?ref='+GITHUB_BRANCH+'&t='+Date.now());
-  const decoded=Uint8Array.from(atob(result.content.replace(/\\s/g,'')),c=>c.charCodeAt(0));
+  const decoded=Uint8Array.from(atob(result.content.replace(/\s/g,'')),c=>c.charCodeAt(0));
   const data=JSON.parse(new TextDecoder().decode(decoded));
   if(!Array.isArray(data))throw new Error('Gespeicherte Fundorte sind ungültig');
   return data;
