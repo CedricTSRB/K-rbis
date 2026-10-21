@@ -26,9 +26,10 @@
     "title": "8003 - Unterm Steg am Pier",
     "area": "8003 - Unterm Steg am Pier",
     "description": "",
-    "image": "assets/originale/fundort-d3c426b0-6ba8-46b6-8c8c-1d18711785fd-1792595620099.png",
     "images": [
-      "assets/originale/fundort-d3c426b0-6ba8-46b6-8c8c-1d18711785fd-1792595620099.png"
-    ]
+      "assets/originale/fundort-d3c426b0-6ba8-46b6-8c8c-1d18711785fd-1792595620099.png",
+      "assets/originale/fundort-d3c426b0-6ba8-46b6-8c8c-1d18711785fd-1792595894010-0.png"
+    ],
+    "image": "assets/originale/fundort-d3c426b0-6ba8-46b6-8c8c-1d18711785fd-1792595620099.png"
   }
 ]
