@@ -59,34 +59,50 @@ body{background:radial-gradient(ellipse 90% 32% at 50% 0%,#5b244d55,transparent 
 @media(prefers-reduced-motion:reduce){.sketch span,.logo-icon,.halloween-scare.active,.halloween-scare-face{animation:none!important}}
 
 
-.suggestion-dialog{width:min(540px,95vw);padding:22px}
-.suggestion-dialog h2{font-size:33px;color:#ffbb70}
-.suggestion-dialog p{color:#cdbac7;font-size:13px;line-height:1.6}
-.suggestion-form{display:grid;gap:12px}
-.suggestion-form label{display:grid;gap:6px;font-size:12px;font-weight:800;color:#ffd5aa}
-.suggestion-form input,.suggestion-form textarea{width:100%;background:#1d1622;color:white;border:1px solid #705061;border-radius:9px;padding:12px;resize:vertical}
-.suggestion-form textarea{min-height:95px}
-.suggestion-send{border:0;border-radius:10px;padding:14px;background:linear-gradient(115deg,#ffc078,#ff812f);color:#241009;font-weight:900}
 @media(max-width:660px){.nav-actions{flex-wrap:wrap;justify-content:flex-end}.halloween-settings-launch{font-size:10px;padding:8px}.nav{height:auto;min-height:75px;padding:10px 0}.logo small{font-size:8px}}
+
+/* THE HAUNTED CITY — cinematic Halloween overhaul */
+:root{--bg:#07070b;--panel:#15101b;--line:#50334b;--orange:#ff8b35;--gold:#ffcf78;--muted:#bcaab8}
+body{background:radial-gradient(ellipse 85% 26% at 65% 1%,#8f3c3130,transparent 75%),radial-gradient(ellipse 70% 30% at 10% 53%,#4e23452a,transparent),#07070b;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.28;background-image:radial-gradient(#ffca9566 1px,transparent 1px);background-size:83px 97px;mask-image:linear-gradient(to bottom,#000,transparent 80%)}
+.top{backdrop-filter:blur(20px);background:#0d0a13e8;border-bottom:1px solid #fc8c4e45}
+.nav{min-height:85px}.logo strong{letter-spacing:.09em}.logo-icon{background:radial-gradient(circle,#ff9b3b38,#24111b);border-color:#ed9c5e8f}
+.hero{min-height:525px;display:flex;align-items:center;background:radial-gradient(circle at 79% 35%,#f9a6452d,transparent 30%),radial-gradient(ellipse at 50% 108%,#be4b3530,transparent 65%),linear-gradient(135deg,#110b19,#080910 65%,#1e111f);box-shadow:inset 0 -75px 80px #06050877}
+.hero::before{content:"";position:absolute;inset:auto -5% -18px;height:115px;background:linear-gradient(transparent,#0a080d),repeating-linear-gradient(95deg,#0b090f 0 19px,#1b121a 20px 24px,transparent 25px 74px);clip-path:polygon(0 75%,8% 54%,14% 75%,21% 34%,30% 72%,39% 20%,47% 80%,57% 40%,68% 70%,75% 26%,84% 70%,94% 44%,100% 77%,100% 100%,0 100%);opacity:.68;pointer-events:none}
+.hero::after{content:"🦇";position:absolute;font-size:74px;top:13%;right:19%;opacity:.36;filter:drop-shadow(0 0 18px #ce793c);animation:batflight 11s ease-in-out infinite alternate;pointer-events:none}
+.kicker{color:#ffcf90;text-shadow:0 0 18px #f4783a80}
+h1{font-size:clamp(68px,10vw,136px);text-shadow:0 12px 34px #000b}
+h1 em{background:linear-gradient(125deg,#fff0af 5%,#ff963d 42%,#d54236 88%);background-clip:text;-webkit-background-clip:text}
+.intro{color:#dfc9c4}.action{border:1px solid #ffe09b66;box-shadow:0 10px 40px #f57f3555,inset 0 1px #fff6}
+.sketch{background:radial-gradient(circle,#f6a34920,transparent 60%);border-color:#ffbd6955;box-shadow:0 0 90px #ff8d282e,inset 0 0 60px #ff7a191c}
+.sketch span{filter:drop-shadow(0 0 33px #ff9f41bc)}
+.stats{margin-top:35px}.stat{background:linear-gradient(140deg,#221722,#120f18);border-color:#69435466;box-shadow:0 14px 45px #0007}.stat-icon{box-shadow:0 0 25px #fd8d3125}
+.locations{position:relative}.locations::before{content:"☾";position:absolute;right:6%;top:30px;font-size:120px;color:#ffc37d11;pointer-events:none}
+.location-title h2{letter-spacing:.015em}.location-title h2 span{text-shadow:0 0 20px #fe8f4866}
+.search,.tabs{background:#1c1321;border-color:#674154}.search:focus{border-color:#ffac6f;outline:0;box-shadow:0 0 0 3px #fe8b3a30}
+.card{background:linear-gradient(170deg,#201724,#100d16);border-color:#644354;border-radius:19px;box-shadow:0 20px 44px #0008;transition:transform .26s,border-color .26s,box-shadow .26s}
+.card:hover{transform:translateY(-7px);border-color:#ffad5a;box-shadow:0 25px 48px #000b,0 0 27px #ff7d2e2a}
+.card-image{background:radial-gradient(circle at 50% 30%,#79482e,#1a1020 75%)}
+.card-image img{transition:transform .55s ease,filter .4s}.card:hover .card-image img{transform:scale(1.055);filter:saturate(1.12)}
+.card-image::after{content:"";position:absolute;inset:auto 0 0;height:40px;background:linear-gradient(transparent,#1a1220);pointer-events:none}
+.number{border-color:#ffba7f99;background:#180d15e0;box-shadow:0 4px 18px #0009}
+.card h3{color:#ffe5be}.check{transition:all .18s}.check:hover{background:#593021;box-shadow:0 0 16px #f47b3155}
+.progress-track{background:#2a1b2c}.progress-fill{box-shadow:0 0 20px #ff9b4b}
+.tip{background:linear-gradient(110deg,#2d1c20,#1b131c);border-color:#8b533b}
+.foot{background:#08070c}
+.halloween-settings-launch,.admin-launch{transition:transform .18s,background .18s}.halloween-settings-launch:hover,.admin-launch:hover{transform:translateY(-2px)}
+@keyframes batflight{to{transform:translate(-90px,40px) rotate(-9deg);opacity:.12}}
+@media(max-width:660px){.hero{min-height:auto}.hero::after{font-size:35px;right:8%}.card{border-radius:15px}.locations::before{display:none}}
+@media(prefers-reduced-motion:reduce){.hero::after,.card-image img{animation:none;transition:none}}
+
 </style></head>
-<body><header class="top"><div class="wrap nav"><a class="logo" href="#start"><span class="logo-icon">🎃</span><span><strong>NARCO<span>CITY</span></strong><small>HALLOWEEN EVENT GUIDE</small></span></a><div class="nav-actions"><span class="badge"><i></i>KÜRBISSUCHE 2026</span><button class="halloween-settings-launch" id="suggestion-open" type="button">💡 Vorschläge</button><button class="halloween-settings-launch" id="halloween-settings-open" type="button" aria-label="Halloween-Einstellungen öffnen">⚙️ Einstellungen</button><button class="admin-launch" id="admin-open" type="button">⚙ Verwalten</button></div></div></header>
+<body><header class="top"><div class="wrap nav"><a class="logo" href="#start"><span class="logo-icon">🎃</span><span><strong>NARCO<span>CITY</span></strong><small>HALLOWEEN EVENT GUIDE</small></span></a><div class="nav-actions"><span class="badge"><i></i>KÜRBISSUCHE 2026</span><button class="halloween-settings-launch" id="halloween-settings-open" type="button" aria-label="Halloween-Einstellungen öffnen">⚙️ Einstellungen</button><button class="admin-launch" id="admin-open" type="button">⚙ Verwalten</button></div></div></header>
 <main id="start"><section class="hero"><div class="wrap hero-row"><div class="hero-copy"><span class="kicker">NARCO CITY · HALLOWEEN SPECIAL</span><h1>FINDE<br><em>ALLE KÜRBISSE.</em></h1><p class="intro">Alle Kürbis-Fundorte auf einen Blick: Screenshots ansehen, Kürbisse finden und direkt abhaken.</p><a class="action" href="#fundorte">FUNDORTE ENTDECKEN ↗</a></div><div class="sketch" aria-hidden="true"><span>🎃</span></div></div></section>
 <div class="wrap"><section class="stats" aria-label="Dein Fortschritt"><div class="stat"><div class="stat-icon">📍</div><div><strong id="total">0</strong><small>Fundorte</small></div></div><div class="stat"><div class="stat-icon">✅</div><div><strong id="found">0</strong><small>Gefunden</small></div></div><div class="stat"><div class="stat-icon">⌛</div><div><strong id="open">0</strong><small>Noch offen</small></div></div></section><div class="progress-row"><div class="progress-track" id="progress-track" role="progressbar" aria-label="Fortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progress"></div></div><div class="progress-percent" id="percent">0% ERLEDIGT</div></div></div>
 <section class="wrap locations" id="fundorte"><div class="location-title"><div><span class="overline">DEINE PERSÖNLICHE CHECKLISTE</span><h2>ALLE <span>FUNDORTE</span></h2><p>Klicke auf ein Bild, um es groß zu sehen, und markiere gefundene Kürbisse.</p></div><button class="reset" id="reset" type="button">↻ Zurücksetzen</button></div><div class="toolbar"><input class="search" id="search" type="search" placeholder="⌕  Fundort suchen ..." aria-label="Fundorte suchen"><div class="tabs" role="group" aria-label="Fundorte filtern"><button class="tab active" data-filter="all" aria-pressed="true">Alle</button><button class="tab" data-filter="open" aria-pressed="false">Noch offen</button><button class="tab" data-filter="found" aria-pressed="false">Gefunden</button></div></div><div class="cards" id="cards"></div><div class="empty" id="empty">🎃 <strong>Keine passenden Fundorte gefunden.</strong><br>Versuche einen anderen Suchbegriff oder Filter.</div><aside class="tip">💡 <strong>Dein Fortschritt gehört dir:</strong> Die Häkchen bleiben auf deinem Gerät im selben Browser gespeichert. Andere Besucher haben ihre eigene Liste. Wenn du Browser oder Gerät wechselst, wird dein Fortschritt nicht automatisch übertragen.</aside></section></main>
 <footer class="foot"><div class="wrap foot-inner"><strong>NARCO<span>CITY</span> 🎃</strong><span>Inoffizieller Community-Guide · Halloween 2026</span></div></footer>
 
 
-<dialog class="suggestion-dialog" id="suggestion-dialog" aria-label="Fehlenden Kürbis vorschlagen">
-<div class="modal-head"><h2>💡 Kürbis vorschlagen</h2><button type="button" id="suggestion-close">✕ Schließen</button></div>
-<p>Fehlt ein Kürbis in der Liste? Schick deinen Fundort als Vorschlag. Er wird erst nach Prüfung eingetragen.</p>
-<form class="suggestion-form" id="suggestion-form">
-<label>Kürbis-Nummer (falls bekannt)<input id="suggestion-number" type="text" maxlength="35" placeholder="z. B. 705"></label>
-<label>Fundort / Bereich *<input id="suggestion-place" type="text" maxlength="150" required placeholder="Wo steht der Kürbis?"></label>
-<label>Beschreibung *<textarea id="suggestion-description" maxlength="1200" required placeholder="Beschreibe möglichst genau, wie man den Kürbis findet."></textarea></label>
-<label>Screenshot-Link (optional)<input id="suggestion-image" type="url" maxlength="1000" placeholder="https://..."></label>
-<p>Zum Absenden wird GitHub geöffnet. Dafür brauchst du ein GitHub-Konto. Dein Vorschlag ist dort öffentlich sichtbar.</p>
-<button class="suggestion-send" type="submit">🎃 Vorschlag bei GitHub einreichen ↗</button>
-</form></dialog>
 <dialog id="halloween-settings" class="halloween-settings" aria-label="Halloween-Einstellungen">
 <div class="modal-head"><h2>⚙️ Einstellungen</h2><button id="halloween-settings-close" type="button">✕ Schließen</button></div>
 <p>Spuk-Effekte der Kürbissuche anpassen.</p>
@@ -196,24 +212,6 @@ $('#search').addEventListener('input',render);
 document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(t=>{t.classList.toggle('active',t===b);t.setAttribute('aria-pressed',String(t===b))});render()}));
 $('#reset').addEventListener('click',()=>{if(!PLACES.some(p=>found[p.id]))return;if(confirm('Alle Häkchen entfernen?')){found={};save();render()}});
 
-
-const suggestionDialog=document.getElementById('suggestion-dialog');
-document.getElementById('suggestion-open').addEventListener('click',()=>suggestionDialog.showModal());
-document.getElementById('suggestion-close').addEventListener('click',()=>suggestionDialog.close());
-document.getElementById('suggestion-form').addEventListener('submit',event=>{
- event.preventDefault();
- const number=document.getElementById('suggestion-number').value.trim();
- const place=document.getElementById('suggestion-place').value.trim();
- const description=document.getElementById('suggestion-description').value.trim();
- const image=document.getElementById('suggestion-image').value.trim();
- if(!place||!description)return;
- const title='🎃 Fehlender Kürbis'+(number?' #'+number:'')+': '+place;
- const body='## Fundort-Vorschlag\\n'.replace('\\n','\n')+
-  '**Nummer:** '+(number||'Unbekannt')+'\n\n**Fundort:** '+place+'\n\n**Beschreibung:**\n'+description+
-  '\n\n**Screenshot:** '+(image||'Nicht angegeben')+'\n\n_Eingereicht über die Kürbissuche-Webseite._';
- const url='https://github.com/CedricTSRB/K-rbis/issues/new?'+new URLSearchParams({title,body}).toString();
- window.open(url,'_blank','noopener,noreferrer');
-});
 
 const halloweenSettings=document.getElementById('halloween-settings');
 const halloweenEnabled=document.getElementById('halloween-scares-enabled');
