@@ -32,7 +32,28 @@ const canSound=()=>unlocked;
 function context(){try{if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;audioCtx=new AC()}if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch{return null}}
 function tone(ac,at,opts={}){const osc=ac.createOscillator(),amp=ac.createGain();osc.type=opts.type||'sawtooth';const duration=opts.duration||.5;osc.frequency.setValueAtTime(Math.max(opts.start||300,1),at);osc.frequency.exponentialRampToValueAtTime(Math.max(opts.end||80,1),at+duration);amp.gain.setValueAtTime(.0001,at);amp.gain.exponentialRampToValueAtTime(Math.max(opts.gain||.04,.0001),at+.025);amp.gain.exponentialRampToValueAtTime(.0001,at+duration);osc.connect(amp);amp.connect(opts.out||ac.destination);osc.start(at);osc.stop(at+duration+.03)}
 function noise(ac,at,duration,gain,filterFreq=600,out=ac.destination){const length=Math.ceil(ac.sampleRate*duration),buffer=ac.createBuffer(1,length,ac.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<length;i++)data[i]=(Math.random()*2-1);const src=ac.createBufferSource(),filter=ac.createBiquadFilter(),amp=ac.createGain();filter.type='lowpass';filter.frequency.value=filterFreq;amp.gain.setValueAtTime(.0001,at);amp.gain.exponentialRampToValueAtTime(gain,at+.025);amp.gain.exponentialRampToValueAtTime(.0001,at+duration);src.buffer=buffer;src.connect(filter);filter.connect(amp);amp.connect(out);src.start(at);src.stop(at+duration+.02)}
-function sound(kind){if(!canSound())return;const ac=context();if(!ac)return;const n=ac.currentTime+.015,master=ac.createGain();master.gain.value=0.23;master.connect(ac.destination);
+const screamClips = ['Wilhelm_Scream.ogg','NOW_screaming.ogg'].map(name => {
+ const clip = document.createElement('audio');
+ clip.src = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/' + name;
+ clip.preload = 'auto';
+ return clip;
+});
+let previousScream = -1;
+function sound(kind){
+ if(!canSound())return;
+ let index = Math.floor(Math.random()*screamClips.length);
+ if(index===previousScream)index=(index+1)%screamClips.length;
+ previousScream=index;
+ const clip=screamClips[index];
+ try {
+   clip.pause();
+   clip.currentTime=0;
+   clip.volume=.8;
+   const playback=clip.play();
+   if(playback)playback.catch(()=>fallbackSound(kind));
+ }catch(e){fallbackSound(kind)}
+}
+function fallbackSound(kind){if(!canSound())return;const ac=context();if(!ac)return;const n=ac.currentTime+.015,master=ac.createGain();master.gain.value=0.23;master.connect(ac.destination);
  try{switch(kind){
  case 'skull':tone(ac,n,{start:560,end:55,type:'sawtooth',duration:.72,gain:.35,out:master});noise(ac,n,.55,.18,1300,master);break;
  case 'demon':tone(ac,n,{start:240,end:38,type:'square',duration:.77,gain:.22,out:master});tone(ac,n+.1,{start:740,end:75,duration:.51,gain:.15,out:master});break;
