@@ -95,7 +95,7 @@ h1 em{background:linear-gradient(125deg,#fff0af 5%,#ff963d 42%,#d54236 88%);back
 @media(max-width:660px){.hero{min-height:auto}.hero::after{font-size:35px;right:8%}.card{border-radius:15px}.locations::before{display:none}}
 @media(prefers-reduced-motion:reduce){.hero::after,.card-image img{animation:none;transition:none}}
 
-</style></head>
+</style><link rel="stylesheet" href="assets/haunted.css"></head>
 <body><header class="top"><div class="wrap nav"><a class="logo" href="#start"><span class="logo-icon">🎃</span><span><strong>NARCO<span>CITY</span></strong><small>HALLOWEEN EVENT GUIDE</small></span></a><div class="nav-actions"><span class="badge"><i></i>KÜRBISSUCHE 2026</span><button class="halloween-settings-launch" id="halloween-settings-open" type="button" aria-label="Halloween-Einstellungen öffnen">⚙️ Einstellungen</button><button class="admin-launch" id="admin-open" type="button">⚙ Verwalten</button></div></div></header>
 <main id="start"><section class="hero"><div class="wrap hero-row"><div class="hero-copy"><span class="kicker">NARCO CITY · HALLOWEEN SPECIAL</span><h1>FINDE<br><em>ALLE KÜRBISSE.</em></h1><p class="intro">Alle Kürbis-Fundorte auf einen Blick: Screenshots ansehen, Kürbisse finden und direkt abhaken.</p><a class="action" href="#fundorte">FUNDORTE ENTDECKEN ↗</a></div><div class="sketch" aria-hidden="true"><span>🎃</span></div></div></section>
 <div class="wrap"><section class="stats" aria-label="Dein Fortschritt"><div class="stat"><div class="stat-icon">📍</div><div><strong id="total">0</strong><small>Fundorte</small></div></div><div class="stat"><div class="stat-icon">✅</div><div><strong id="found">0</strong><small>Gefunden</small></div></div><div class="stat"><div class="stat-icon">⌛</div><div><strong id="open">0</strong><small>Noch offen</small></div></div></section><div class="progress-row"><div class="progress-track" id="progress-track" role="progressbar" aria-label="Fortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progress"></div></div><div class="progress-percent" id="percent">0% ERLEDIGT</div></div></div>
@@ -104,10 +104,14 @@ h1 em{background:linear-gradient(125deg,#fff0af 5%,#ff963d 42%,#d54236 88%);back
 
 
 <dialog id="halloween-settings" class="halloween-settings" aria-label="Halloween-Einstellungen">
-<div class="modal-head"><h2>⚙️ Einstellungen</h2><button id="halloween-settings-close" type="button">✕ Schließen</button></div>
-<p>Spuk-Effekte der Kürbissuche anpassen.</p>
-<div class="halloween-setting-row"><label for="halloween-scares-enabled">Jumpscares mit Schrecksound</label><input id="halloween-scares-enabled" type="checkbox" checked></div>
-<p>⚠️ Achtung: Beim Öffnen einiger Screenshots kann plötzlich ein lauter Ton und ein Schreckbild erscheinen. Bitte Lautstärke entsprechend einstellen.</p>
+<div class="modal-head"><h2>⚙️ Spuk-Einstellungen</h2><button id="halloween-settings-close" type="button">✕ Schließen</button></div>
+<p>Mach deine Kürbissuche so unheimlich, wie du möchtest. Deine Auswahl wird im Browser gespeichert.</p>
+<div class="halloween-setting-row"><label for="halloween-scares-enabled">👹 Zufällige Jumpscares</label><input id="halloween-scares-enabled" type="checkbox" checked></div>
+<div class="halloween-setting-row haunt-range-row"><div class="haunt-range-header"><label for="halloween-scare-volume">🔊 Jumpscare-Lautstärke</label><output id="halloween-volume-value" for="halloween-scare-volume">24 %</output></div><input id="halloween-scare-volume" type="range" min="0" max="100" step="1" value="24" aria-label="Lautstärke der Jumpscares"><p class="haunt-settings-help">0 % = lautlos · betrifft nur die Halloween-Schrecksounds, nicht deinen PC.</p></div>
+<div class="halloween-setting-row"><label for="halloween-scare-frequency">🕯️ Häufigkeit der Schrecke</label><select id="halloween-scare-frequency"><option value="rare">Selten</option><option value="normal" selected>Normal</option><option value="often">Öfter</option></select></div>
+<div class="halloween-setting-row"><label for="halloween-atmosphere-enabled">🌫️ Nebel, Glut, Schatten & Fledermäuse</label><input id="halloween-atmosphere-enabled" type="checkbox" checked></div>
+<button class="haunt-preview" id="halloween-scare-preview" type="button">👻 Zufälligen Jumpscare testen</button>
+<p class="haunt-settings-note">⚠️ Kann plötzlich erschrecken. Sounds starten erst nach einer Interaktion mit der Seite. Bei aktivierter Einstellung für reduzierte Bewegung werden aufwendige Animationen abgeschaltet.</p>
 </dialog>
 <div id="halloween-scare" class="halloween-scare" aria-hidden="true"><span class="halloween-scare-face">👹</span><strong>BOO!</strong></div>
 <dialog id="lightbox"><div class="modal-head"><strong id="modal-title">Screenshot</strong><button id="modal-close" type="button">✕ Schließen</button></div><img id="modal-image" alt="Screenshot der Kürbissuche"><div class="modal-nav" id="modal-nav" hidden><button id="modal-prev" type="button" aria-label="Vorheriges Bild">← Vorheriges</button><span id="modal-count"></span><button id="modal-next" type="button" aria-label="Nächstes Bild">Nächstes →</button></div></dialog>
@@ -206,42 +210,12 @@ $('#total').textContent=PLACES.length;$('#found').textContent=done;$('#open').te
 }
 $('#cards').addEventListener('click',e=>{
 const t=e.target.closest('[data-toggle]');if(t){found[t.dataset.toggle]=!found[t.dataset.toggle];save();render();return}
-const z=e.target.closest('[data-zoom]');if(z){const p=PLACES.find(p=>p.id===z.dataset.zoom);if(p&&getImages(p).length){modalImages=getImages(p);modalTitle=p.title;showModalPhoto(Number(z.dataset.photo)||0);$('#lightbox').showModal();playHalloweenScare()}}
+const z=e.target.closest('[data-zoom]');if(z){const p=PLACES.find(p=>p.id===z.dataset.zoom);if(p&&getImages(p).length){modalImages=getImages(p);modalTitle=p.title;showModalPhoto(Number(z.dataset.photo)||0);$('#lightbox').showModal()}}
 });
 $('#search').addEventListener('input',render);
 document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(t=>{t.classList.toggle('active',t===b);t.setAttribute('aria-pressed',String(t===b))});render()}));
 $('#reset').addEventListener('click',()=>{if(!PLACES.some(p=>found[p.id]))return;if(confirm('Alle Häkchen entfernen?')){found={};save();render()}});
 
-
-const halloweenSettings=document.getElementById('halloween-settings');
-const halloweenEnabled=document.getElementById('halloween-scares-enabled');
-const halloweenStore='narco-halloween-scares-enabled';
-try{halloweenEnabled.checked=localStorage.getItem(halloweenStore)!=='false'}catch(e){}
-document.getElementById('halloween-settings-open').addEventListener('click',()=>halloweenSettings.showModal());
-document.getElementById('halloween-settings-close').addEventListener('click',()=>halloweenSettings.close());
-halloweenEnabled.addEventListener('change',()=>{try{localStorage.setItem(halloweenStore,String(halloweenEnabled.checked))}catch(e){}});
-let halloweenLastScare=0,halloweenScareTimeout=null;
-function playHalloweenScare(){
- if(!halloweenEnabled.checked||document.hidden||Date.now()-halloweenLastScare<18000||Math.random()>.22)return;
- halloweenLastScare=Date.now();
- const cover=document.getElementById('halloween-scare');
- cover.classList.remove('active');void cover.offsetWidth;cover.classList.add('active');
- clearTimeout(halloweenScareTimeout);halloweenScareTimeout=setTimeout(()=>cover.classList.remove('active'),1050);
- // Sound is generated on the actual user click; no external media files required.
- try{
-  const AC=window.AudioContext||window.webkitAudioContext;
-  if(!AC)return;
-  const ac=new AC(),now=ac.currentTime;
-  const osc=ac.createOscillator(),gain=ac.createGain(),dist=ac.createWaveShaper();
-  const curve=new Float32Array(44100);
-  for(let i=0;i<curve.length;i++){const x=i*2/curve.length-1;curve[i]=(3+48)*x*20/(Math.PI+48*Math.abs(x))}
-  dist.curve=curve;
-  osc.type='sawtooth';osc.frequency.setValueAtTime(850,now);osc.frequency.exponentialRampToValueAtTime(85,now+.63);
-  gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.68,now+.035);gain.gain.exponentialRampToValueAtTime(.001,now+.72);
-  osc.connect(dist);dist.connect(gain);gain.connect(ac.destination);
-  ac.resume();osc.start(now);osc.stop(now+.74);osc.onended=()=>ac.close();
- }catch(e){console.warn('Jumpscare-Ton konnte nicht abgespielt werden',e)}
-}
 
 let modalImages=[],modalTitle='',modalIndex=0;
 function showModalPhoto(index){
@@ -474,4 +448,4 @@ $('#admin-delete').addEventListener('click',async()=>{
 });
 loadPublicPlaces();
 
-</script></body></html>
+</script><script defer src="assets/haunted.js"></script></body></html>
