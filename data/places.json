@@ -242,6 +242,17 @@
     "image": "assets/originale/fundort-d3c426b0-6ba8-46b6-8c8c-1d18711785fd-1792595620099.png"
   },
   {
+    "id": "fundort-1c2c516c-7ac9-48de-9c84-98185c0b835b",
+    "title": "9376 - Rechts wenn man an der bucht an kommt",
+    "area": "9376 - Rechts wenn man an der bucht an kommt",
+    "description": "",
+    "images": [
+      "assets/originale/fundort-1c2c516c-7ac9-48de-9c84-98185c0b835b-1792689885455-0.png",
+      "assets/originale/fundort-1c2c516c-7ac9-48de-9c84-98185c0b835b-1792689897521-0.png"
+    ],
+    "image": "assets/originale/fundort-1c2c516c-7ac9-48de-9c84-98185c0b835b-1792689885455-0.png"
+  },
+  {
     "id": "fundort-0c7b5ad4-1ad5-4ec2-9fed-5ac29f949c17",
     "title": "9395 - Auf der insel im gras",
     "area": "9395 - Auf der insel im gras",
@@ -339,15 +350,5 @@
       "assets/originale/fundort-e3670049-eea5-483e-aa13-38a1318764fc-1792599320459-0.png"
     ],
     "image": "assets/originale/fundort-e3670049-eea5-483e-aa13-38a1318764fc-1792599307905-0.png"
-  },
-  {
-    "id": "fundort-1c2c516c-7ac9-48de-9c84-98185c0b835b",
-    "title": "9376 - Rechts wenn man an der bucht an kommt",
-    "area": "9376 - Rechts wenn man an der bucht an kommt",
-    "description": "",
-    "images": [
-      "assets/originale/fundort-1c2c516c-7ac9-48de-9c84-98185c0b835b-1792689885455-0.png"
-    ],
-    "image": "assets/originale/fundort-1c2c516c-7ac9-48de-9c84-98185c0b835b-1792689885455-0.png"
   }
 ]
