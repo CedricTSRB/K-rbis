@@ -231,6 +231,17 @@
     "image": "assets/originale/fundort-f4de2872-d098-4822-a2ee-e7c374eae20f-1792596068599-0.png"
   },
   {
+    "id": "fundort-1bad694e-b9a8-43e5-a32c-aef197cb89f7",
+    "title": "7353 - Wasserwerk Treppe hoch",
+    "area": "7353 - Wasserwerk Treppe hoch",
+    "description": "",
+    "images": [
+      "assets/originale/fundort-1bad694e-b9a8-43e5-a32c-aef197cb89f7-1792690961120-0.png",
+      "assets/originale/fundort-1bad694e-b9a8-43e5-a32c-aef197cb89f7-1792690977464-0.png"
+    ],
+    "image": "assets/originale/fundort-1bad694e-b9a8-43e5-a32c-aef197cb89f7-1792690961120-0.png"
+  },
+  {
     "id": "fundort-d3c426b0-6ba8-46b6-8c8c-1d18711785fd",
     "title": "8003 - Unterm Steg am Pier",
     "area": "8003 - Unterm Steg am Pier",
@@ -350,15 +361,5 @@
       "assets/originale/fundort-e3670049-eea5-483e-aa13-38a1318764fc-1792599320459-0.png"
     ],
     "image": "assets/originale/fundort-e3670049-eea5-483e-aa13-38a1318764fc-1792599307905-0.png"
-  },
-  {
-    "id": "fundort-1bad694e-b9a8-43e5-a32c-aef197cb89f7",
-    "title": "7353 - Wasserwerk Treppe hoch",
-    "area": "7353 - Wasserwerk Treppe hoch",
-    "description": "",
-    "images": [
-      "assets/originale/fundort-1bad694e-b9a8-43e5-a32c-aef197cb89f7-1792690961120-0.png"
-    ],
-    "image": "assets/originale/fundort-1bad694e-b9a8-43e5-a32c-aef197cb89f7-1792690961120-0.png"
   }
 ]
